@@ -43,31 +43,42 @@ pwm=GPIO.PWM(servoPin,50)
 def main(args):
     print ("Setting to neutral position")
     pwm.start(0)
-    laserGameA()
+
+    laserGameChase()
 
 
 #lasers move from left to right and sporatically turns
 #the laser on and keeps in one spot for a set amount of time, then
 #again turns off, changes angles and turns the light back on
-def laserGameA():
-    while True: 
+def laserGameChase():
+    startTime = time.time()
+    while time.time()-startTime < 180: 
         angle = random.randint(0,160)
-        sleepTime = random.randint(3,15)
-        print("Sleeping for ",str(sleepTime))
-        sleep(sleepTime)
+        lightOn()
         print("Setting angle to ",str(angle))
         setAngle(angle)
-    
+        sleepTime = random.randint(3,10)
+        print("Sleeping for ",str(sleepTime))
+        sleep(sleepTime)
+    print ("Game time exceeded, turning off now")    
+    lightOff()
+
+        
+
+
+#angle of diode changes when off, turns back on and sleeps for sometime
+def laserGamePounce():
+    print("Pounce Game")
+       
 
     
 def setAngle(angle):
     duty = angle/18 +3
     GPIO.output(servoPin,True)
     pwm.ChangeDutyCycle(duty)
-    lightOn()
     sleep(1)
     GPIO.output(servoPin,False)
-    pwm.ChangeDutyCycle(duty)
+    #pwm.ChangeDutyCycle(duty)
 
 def lightOn():
     print ("Turning on laser")
