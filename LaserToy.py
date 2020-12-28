@@ -42,8 +42,7 @@ GPIO.setup(laserPinB, GPIO.OUT)
 GPIO.setup(servoPinB, GPIO.OUT)
 pwm=GPIO.PWM(servoPinA,50)
 pwmB=GPIO.PWM(servoPinB,50)
-moduleA = LaserModule()
-moduleB = LaserModule()
+
 
 
      
@@ -53,29 +52,33 @@ def main(args):
     pwmB.start(0)
     moduleA = LaserModule()
     moduleB = LaserModule()
-    init(moduleA,moduleB)
-    laserGameChase(moduleA,)
+    compoundModule = CompoundLaserModule()
+    init(moduleA,moduleB,compoundModule)
+    laserGameChase(compoundModule)
 
-def init(moduleA, moduleB):
+def init(moduleA, moduleB, compoundModule):
     moduleA.laser = laserPin
     moduleA.servo = servoPinA
     moduleA.name = 'LaserModule A'
     moduleB.laser = laserPinB
     moduleB.servo = servoPinB
     moduleB.name = 'LaserModule B'
+    compoundModule.moduleA = moduleA
+    compoundModule.moduleB = moduleB
+    
     
    
 #lasers move from left to right and sporatically turns
 #the laser on and keeps in one spot for a set amount of time, then
 #again turns off, changes angles and turns the light back on
-def laserGameChase(module):
+def laserGameChase(compoundModule):
     startTime = time.time()
     while time.time()-startTime < 180:
         randNum = random.randint(0,1)
         if randNum == 0:
-            module = moduleA
+            module = compoundModule.moduleA
         else:
-            module = moduleB
+            module = compoundModule.moduleB
             
         module.angle = random.randint(0,160)
         lightOn(module)
@@ -84,9 +87,10 @@ def laserGameChase(module):
         sleepTime = random.randint(3,10)
         print("Sleeping for ",str(sleepTime))
         sleep(sleepTime)
-        lightOff(module)
+        module.turnOffLight()
     print ("Game time exceeded, turning off now")
-    lightOff(module)    
+    compoundModule.turnOffLights()
+    #lightOff(compoundModule.moduleA,compoundModule.moduleB)    
 
 
         
@@ -113,15 +117,30 @@ def lightOn(module):
     GPIO.output(module.laser,GPIO.HIGH)
         
     
-def lightOff(module):
-    print ("Turning off laser diode")
-    GPIO.output(module.laser,GPIO.LOW)
+def lightOff(moduleA,moduleB):
+    print ("Turning off laser diodes")
+    GPIO.output(moduleA.laser,GPIO.LOW)
+    GPIO.output(moduleB.laser,GPIO.LOW)
     
 class LaserModule:
+    def turnOffLight(self):
+        GPIO.output(self.laser,GPIO.LOW)
     servo = 0
     laser = 0
     name = ''
     angle = 0
+
+      
+class CompoundLaserModule:
+    moduleA = LaserModule()
+    moduleB = LaserModule()
+    def turnOffLights(self):
+        print("Turning off laser diodes")
+        GPIO.ouput(self.moduleA.laser,GPIO.LOW)
+        GPIO.output(self.moduleB.laser,GPIO.LOW)
+        
+
+        
             
 if __name__ == '__main__':
     import sys
