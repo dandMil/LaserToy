@@ -3,6 +3,7 @@
 import RPi.GPIO as GPIO
 import time
 import subprocess
+import os 
 
 
 pwrButton= 33
@@ -16,8 +17,7 @@ def main (args):
     while True:
         if GPIO.input(pwrButton) == GPIO.HIGH:
             print ("Calling LaserToy.py")
-        else:
-            print ("Power is off")
+            os.system('python LaserToy.py')
             
 if __name__ == '__main__':
     import sys
